@@ -1,0 +1,107 @@
+package ru.yole.conflued.vfs;
+
+import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.openapi.vfs.DeprecatedVirtualFile;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileSystem;
+import org.jetbrains.annotations.NotNull;
+import ru.yole.conflued.model.ConfPage;
+import ru.yole.conflued.model.PageContentStore;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+
+/**
+ * @author yole
+ */
+public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
+    private ConfPage myPage;
+
+    @NotNull
+    @Override
+    public String getName() {
+        return myPage.getTitle();
+    }
+
+    @NotNull
+    @Override
+    public VirtualFileSystem getFileSystem() {
+        return ConfluenceVirtualFileSystem.getInstance();
+    }
+
+    @Override
+    public String getPath() {
+        return getName();
+    }
+
+    @Override
+    public boolean isWritable() {
+        return true;
+    }
+
+    @Override
+    public boolean isDirectory() {
+        return false;
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public VirtualFile getParent() {
+        return null;
+    }
+
+    @Override
+    public VirtualFile[] getChildren() {
+        return VirtualFile.EMPTY_ARRAY;
+    }
+
+    @NotNull
+    @Override
+    public OutputStream getOutputStream(Object requestor, long newModificationStamp, long newTimeStamp) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public byte[] contentsToByteArray() throws IOException {
+        String content = PageContentStore.getInstance().loadContent(myPage.getId(), myPage.getVersion());
+        return content.getBytes(CharsetToolkit.UTF8_CHARSET);
+    }
+
+    @Override
+    public long getTimeStamp() {
+        return myPage.getVersion();
+    }
+
+    @Override
+    public long getLength() {
+        String content;
+        try {
+            content = PageContentStore.getInstance().loadContent(myPage.getId(), myPage.getVersion());
+        } catch (IOException e) {
+            return -1;
+        }
+        return content.getBytes(CharsetToolkit.UTF8_CHARSET).length;
+    }
+
+    @Override
+    public void refresh(boolean asynchronous, boolean recursive, Runnable postRunnable) {
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        return new ByteArrayInputStream(contentsToByteArray());
+    }
+
+    @Override
+    public Charset getCharset() {
+        return CharsetToolkit.UTF8_CHARSET;
+    }
+}

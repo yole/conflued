@@ -1,0 +1,27 @@
+<idea-plugin version="2">
+    <name>ConfluEd</name>
+    <description>Offline editor for Atlassian Confluence</description>
+    <version>1.0</version>
+    <vendor>Dmitry Jemerov</vendor>
+    <idea-version since-build="107.105"/>
+
+    <application-components>
+        <component>
+            <implementation-class>ru.yole.conflued.vfs.ConfluenceVirtualFileSystem</implementation-class>
+        </component>
+    </application-components>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceInterface="ru.yole.conflued.model.ConfServers"
+                            serviceImplementation="ru.yole.conflued.model.ConfServers"/>
+        <applicationService serviceInterface="ru.yole.conflued.client.ConfluenceClient"
+                            serviceImplementation="ru.yole.conflued.client.ConfluenceClient"/>
+        <applicationService serviceInterface="ru.yole.conflued.model.PageContentStore"
+                            serviceImplementation="ru.yole.conflued.model.PageContentStore"/>
+        <toolWindow anchor="left" id="Confluence" factoryClass="ru.yole.conflued.ui.ConfluenceToolWindowFactory"/>
+    </extensions>
+</idea-plugin>
