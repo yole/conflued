@@ -1,5 +1,8 @@
 package ru.yole.conflued.client;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.ActionCallback;
@@ -149,11 +152,17 @@ public class ConfluenceClient {
         }
     }
 
-    private ActionCallback doRunWithLoginToken(ConfServer server, String method, Object[] args, Consumer<Object> consumer) {
+    private ActionCallback doRunWithLoginToken(ConfServer server, final String method, Object[] args, Consumer<Object> consumer) {
         List<Object> allArgs = new ArrayList<Object>();
         allArgs.add(myLoginTokens.get(server));
         Collections.addAll(allArgs, args);
-        return remoteCall(server.getURL() + "/rpc/xmlrpc", CONFLUENCE_PREFIX + method, allArgs.toArray(), consumer);
+        return remoteCall(server.getURL() + "/rpc/xmlrpc", CONFLUENCE_PREFIX + method, allArgs.toArray(), consumer,
+                new Consumer<Exception>() {
+                    public void consume(Exception e) {
+                        Notifications.Bus.notify(new Notification("Confluence", "Confluence Operation Failed",
+                                "Failure on " + method + ": " + e.getMessage(),
+                                NotificationType.ERROR));                    }
+                });
     }
 
     private ActionCallback login(final ConfServer server) {
@@ -164,11 +173,20 @@ public class ConfluenceClient {
                     public void consume(Object o) {
                         myLoginTokens.put(server, (String) o);
                     }
+                },
+                new Consumer<Exception>() {
+                    public void consume(Exception e) {
+                        Notifications.Bus.notify(new Notification("Confluence", "Confluence Operation Failed",
+                                "Confluence login failed: " + e.getMessage(),
+                                NotificationType.ERROR));
+                        server.setLoginFailed(true);
+                    }
                 });
     }
 
     private ActionCallback remoteCall(final String url, final String method, final Object[] args,
-                                      final Consumer<Object> resultConsumer) {
+                                      final Consumer<Object> resultConsumer,
+                                      final Consumer<Exception> errorConsumer) {
         final ActionCallback result = new ActionCallback();
         ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
             public void run() {
@@ -188,7 +206,7 @@ public class ConfluenceClient {
                     resultConsumer.consume(result);
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    errorConsumer.consume(e);
                 }
                 result.setDone();
             }

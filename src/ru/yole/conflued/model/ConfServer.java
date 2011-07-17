@@ -15,6 +15,7 @@ public class ConfServer implements ConfObject {
     private String myUserName;
     private String myPassword;
     private int myLastNewPageId;
+    private boolean myLoginFailed;
 
     public List<ConfSpace> spaces = new ArrayList<ConfSpace>();
 
@@ -32,6 +33,7 @@ public class ConfServer implements ConfObject {
 
     public void setUserName(String userName) {
         myUserName = userName;
+        myLoginFailed = false;
     }
 
     public String getPassword() {
@@ -40,6 +42,7 @@ public class ConfServer implements ConfObject {
 
     public void setPassword(String password) {
         myPassword = password;
+        myLoginFailed = false;
     }
 
     public void loaded() {
@@ -68,5 +71,13 @@ public class ConfServer implements ConfObject {
 
     public String nextNewPageId() {
         return NEW_PAGE_ID_PREFIX + ++myLastNewPageId;
+    }
+
+    public boolean isLoginFailed() {
+        return myLoginFailed;
+    }
+
+    public void setLoginFailed(boolean loginFailed) {
+        myLoginFailed = loginFailed;
     }
 }

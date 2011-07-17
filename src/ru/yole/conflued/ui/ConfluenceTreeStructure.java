@@ -63,7 +63,7 @@ public class ConfluenceTreeStructure extends AbstractTreeStructure {
     }
 
     private void refreshElement(final ConfObject element) {
-        if (ConfluenceClient.getInstance().isOffline()) {
+        if (ConfluenceClient.getInstance().isOffline() || getServer(element).isLoginFailed()) {
             return;
         }
         RefreshAction.refreshObject(element).doWhenDone(new Runnable() {
@@ -75,6 +75,16 @@ public class ConfluenceTreeStructure extends AbstractTreeStructure {
                 });
             }
         });
+    }
+
+    private ConfServer getServer(ConfObject element) {
+        if (element == null || element instanceof ConfServers) {
+            return null;
+        }
+        if (element instanceof ConfServer) {
+            return (ConfServer) element;
+        }
+        return getServer(element.getParent());
     }
 
     @Override
