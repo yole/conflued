@@ -11,6 +11,7 @@ public class ConfPage implements ConfObject {
     private String myParentId;
     private String myTitle;
     private int myVersion;
+    private boolean myLocallyModified;
 
     public void loaded(ConfSpace space) {
         mySpace = space;
@@ -66,5 +67,13 @@ public class ConfPage implements ConfObject {
     @Transient
     public String getDisplayName() {
         return myTitle;
+    }
+
+    public boolean isLocallyModified() {
+        return myLocallyModified;
+    }
+
+    public void setLocallyModified(boolean locallyModified) {
+        myLocallyModified = locallyModified;
     }
 }

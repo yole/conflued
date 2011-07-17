@@ -8,10 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.yole.conflued.model.ConfPage;
 import ru.yole.conflued.model.PageContentStore;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 
 /**
@@ -74,16 +71,24 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
     @NotNull
     @Override
     public OutputStream getOutputStream(Object requestor, long newModificationStamp, long newTimeStamp) throws IOException {
-        throw new UnsupportedOperationException();
+        return new ByteArrayOutputStream() {
+            @Override
+            public void close() throws IOException {
+                myPage.setLocallyModified(true);
+                PageContentStore.getInstance().storeLocallyModifiedContent(myPage.getId(), toString(CharsetToolkit.UTF8));
+            }
+        };
     }
 
     @NotNull
     @Override
     public byte[] contentsToByteArray() throws IOException {
         PageContentStore contentStore = PageContentStore.getInstance();
-        String content = contentStore.hasContent(myPage.getId(), myPage.getVersion())
-                ? contentStore.loadContent(myPage.getId(), myPage.getVersion())
-                : "Loading...";
+        String content = myPage.isLocallyModified()
+                ? contentStore.loadLocallyModifiedContent(myPage.getId())
+                : (contentStore.hasContent(myPage.getId(), myPage.getVersion())
+                  ? contentStore.loadContent(myPage.getId(), myPage.getVersion())
+                  : "Loading...");
         return content.getBytes(CharsetToolkit.UTF8_CHARSET);
     }
 
