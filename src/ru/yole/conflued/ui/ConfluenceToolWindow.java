@@ -4,6 +4,8 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.pom.Navigatable;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.treeStructure.Tree;
@@ -29,6 +31,11 @@ public class ConfluenceToolWindow extends SimpleToolWindowPanel {
     private final Project myProject;
     private Tree myTree;
     private ConfluenceTreeBuilder myTreeBuilder;
+
+    public static ConfluenceToolWindow getInstance(Project project) {
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Confluence");
+        return (ConfluenceToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
+    }
 
     public ConfluenceToolWindow(Project project) {
         super(true);

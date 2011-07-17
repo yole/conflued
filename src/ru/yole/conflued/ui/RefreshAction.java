@@ -36,7 +36,7 @@ public class RefreshAction extends AnAction implements DumbAware {
         }
     }
 
-    private ActionCallback refreshObject(ConfObject object) {
+    public static ActionCallback refreshObject(ConfObject object) {
         final ConfluenceClient client = ConfluenceClient.getInstance();
         if (object instanceof ConfServer) {
             return client.updateSpaces((ConfServer) object);

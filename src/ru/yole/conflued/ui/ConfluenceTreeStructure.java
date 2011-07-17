@@ -2,6 +2,7 @@ package ru.yole.conflued.ui;
 
 import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeDescriptor;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
@@ -39,10 +40,17 @@ public class ConfluenceTreeStructure extends AbstractTreeStructure {
             return ConfServers.getInstance().servers.toArray();
         }
         if (element instanceof ConfServer) {
-            return ((ConfServer) element).spaces.toArray();
+            List<ConfSpace> spaces = ((ConfServer) element).spaces;
+            if (spaces.size() == 0) {
+                refreshElement((ConfObject) element);
+            }
+            return spaces.toArray();
         }
         if (element instanceof ConfSpace) {
             List<ConfPage> pages = ((ConfSpace) element).findPagesWithParent("0");
+            if (pages.size() == 0) {
+                refreshElement((ConfObject) element);
+            }
             return pages.toArray(new Object[pages.size()]);
         }
         if (element instanceof ConfPage) {
@@ -51,6 +59,18 @@ public class ConfluenceTreeStructure extends AbstractTreeStructure {
             return pages.toArray(new Object[pages.size()]);
         }
         return ArrayUtil.EMPTY_OBJECT_ARRAY;
+    }
+
+    private void refreshElement(final ConfObject element) {
+        RefreshAction.refreshObject(element).doWhenDone(new Runnable() {
+            public void run() {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    public void run() {
+                        ConfluenceToolWindow.getInstance(myProject).updateTree(element);
+                    }
+                });
+            }
+        });
     }
 
     @Override
