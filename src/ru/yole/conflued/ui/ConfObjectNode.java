@@ -9,10 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.ui.SimpleTextAttributes;
-import ru.yole.conflued.model.ConfObject;
-import ru.yole.conflued.model.ConfPage;
-import ru.yole.conflued.model.ConfServer;
-import ru.yole.conflued.model.ConfSpace;
+import ru.yole.conflued.model.*;
 
 import java.awt.*;
 
@@ -49,6 +46,9 @@ public class ConfObjectNode extends PresentableNodeDescriptor {
             }
             else if (page.isLocallyModified()) {
                 color = colorsScheme.getColor(FileStatus.MODIFIED.getColorKey());
+            }
+            else if (!PageContentStore.getInstance().hasContent(page.getId(), page.getVersion())) {
+                color = colorsScheme.getColor(FileStatus.DELETED.getColorKey());
             }
         }
 
