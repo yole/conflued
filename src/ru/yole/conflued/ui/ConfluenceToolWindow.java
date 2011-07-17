@@ -11,6 +11,7 @@ import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.treeStructure.Tree;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
+import ru.yole.conflued.client.ConfluenceClient;
 import ru.yole.conflued.model.ConfObject;
 import ru.yole.conflued.model.ConfPage;
 import ru.yole.conflued.model.PageContentStore;
@@ -53,6 +54,7 @@ public class ConfluenceToolWindow extends SimpleToolWindowPanel {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new AddServerAction());
         group.add(new RefreshAction());
+        group.add(new ToggleOfflineAction());
         group.add(new AddPageAction());
         final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("Confluence", group, true);
         return toolbar.getComponent();
@@ -105,7 +107,8 @@ public class ConfluenceToolWindow extends SimpleToolWindowPanel {
         }
 
         public boolean canNavigate() {
-            return true;
+            return !ConfluenceClient.getInstance().isOffline() ||
+                    PageContentStore.getInstance().hasContent(myPage.getId(), myPage.getVersion());
         }
 
         public boolean canNavigateToSource() {

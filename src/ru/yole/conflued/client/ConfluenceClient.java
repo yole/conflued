@@ -22,8 +22,18 @@ public class ConfluenceClient {
     private static final String CONFLUENCE_PREFIX = "confluence1.";
     private final Map<ConfServer, String> myLoginTokens = new WeakHashMap<ConfServer, String>();
 
+    private boolean myOffline;
+
     public static ConfluenceClient getInstance() {
         return ServiceManager.getService(ConfluenceClient.class);
+    }
+
+    public boolean isOffline() {
+        return myOffline;
+    }
+
+    public void setOffline(boolean offline) {
+        myOffline = offline;
     }
 
     public ActionCallback updateSpaces(final ConfServer server) {

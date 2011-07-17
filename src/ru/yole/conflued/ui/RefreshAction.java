@@ -67,6 +67,7 @@ public class RefreshAction extends AnAction implements DumbAware {
     @Override
     public void update(AnActionEvent e) {
         final ConfObject[] selectedObjects = e.getData(ConfluenceToolWindow.CONF_OBJECTS_DATA_KEY);
-        e.getPresentation().setEnabled(selectedObjects != null && selectedObjects.length > 0);
+        e.getPresentation().setEnabled(selectedObjects != null && selectedObjects.length > 0 &&
+                !ConfluenceClient.getInstance().isOffline());
     }
 }

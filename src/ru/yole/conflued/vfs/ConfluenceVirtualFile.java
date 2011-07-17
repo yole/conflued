@@ -82,12 +82,15 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
                 myPage.setLocallyModified(true);
                 String content = toString(CharsetToolkit.UTF8);
                 PageContentStore.getInstance().storeLocallyModifiedContent(myPage.getId(), content);
-                ConfluenceClient.getInstance().updatePage(myPage, content).doWhenDone(new Runnable() {
-                    public void run() {
-                        myPage.setLocallyModified(false);
-                        ConfluenceVirtualFileSystem.getInstance().notifyPageUpdated(myPage);
-                    }
-                });
+                ConfluenceClient client = ConfluenceClient.getInstance();
+                if (!client.isOffline()) {
+                    client.updatePage(myPage, content).doWhenDone(new Runnable() {
+                        public void run() {
+                            myPage.setLocallyModified(false);
+                            ConfluenceVirtualFileSystem.getInstance().notifyPageUpdated(myPage);
+                        }
+                    });
+                }
             }
         };
     }

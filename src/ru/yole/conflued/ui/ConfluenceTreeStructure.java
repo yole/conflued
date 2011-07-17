@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
+import ru.yole.conflued.client.ConfluenceClient;
 import ru.yole.conflued.model.*;
 
 import java.util.List;
@@ -62,6 +63,9 @@ public class ConfluenceTreeStructure extends AbstractTreeStructure {
     }
 
     private void refreshElement(final ConfObject element) {
+        if (ConfluenceClient.getInstance().isOffline()) {
+            return;
+        }
         RefreshAction.refreshObject(element).doWhenDone(new Runnable() {
             public void run() {
                 ApplicationManager.getApplication().invokeLater(new Runnable() {
