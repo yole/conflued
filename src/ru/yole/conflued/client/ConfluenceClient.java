@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Consumer;
 import org.apache.xmlrpc.XmlRpcClient;
+import org.jetbrains.annotations.Nullable;
 import ru.yole.conflued.model.ConfPage;
 import ru.yole.conflued.model.ConfServer;
 import ru.yole.conflued.model.ConfSpace;
@@ -77,7 +78,7 @@ public class ConfluenceClient {
                 });
     }
 
-    private void parsePage(ConfPage page, Hashtable pageData, Consumer<Pair<ConfPage, String>> contentConsumer) {
+    private void parsePage(ConfPage page, Hashtable pageData, @Nullable Consumer<Pair<ConfPage, String>> contentConsumer) {
         page.setVersion(Integer.parseInt((String) pageData.get("version")));
         if (contentConsumer != null) {
             String content = (String) pageData.get("content");
@@ -98,7 +99,11 @@ public class ConfluenceClient {
         updateOptions.put("minorEdit", false);
 
         return runWithLoginToken(page.getSpace().getServer(), "updatePage",
-                new Object[] { pageData, updateOptions }, Consumer.EMPTY_CONSUMER);
+                new Object[] { pageData, updateOptions }, new Consumer<Object>() {
+            public void consume(Object o) {
+                parsePage(page, (Hashtable) o, null);
+            }
+        });
     }
 
     private ActionCallback runWithLoginToken(final ConfServer server, final String method, final Object[] args, final Consumer<Object> consumer) {
