@@ -76,4 +76,9 @@ public class ConfPage implements ConfObject {
     public void setLocallyModified(boolean locallyModified) {
         myLocallyModified = locallyModified;
     }
+
+    @Transient
+    public boolean isNew() {
+        return myId.startsWith(ConfServer.NEW_PAGE_ID_PREFIX);
+    }
 }

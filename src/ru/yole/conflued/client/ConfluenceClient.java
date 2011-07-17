@@ -79,6 +79,9 @@ public class ConfluenceClient {
     }
 
     private void parsePage(ConfPage page, Hashtable pageData, @Nullable Consumer<Pair<ConfPage, String>> contentConsumer) {
+        if (page.isNew()) {
+            page.setId((String) pageData.get("id"));
+        }
         page.setVersion(Integer.parseInt((String) pageData.get("version")));
         if (contentConsumer != null) {
             String content = (String) pageData.get("content");
@@ -88,18 +91,33 @@ public class ConfluenceClient {
 
     public ActionCallback updatePage(final ConfPage page, final String content) {
         Hashtable pageData = new Hashtable();
-        pageData.put("id", page.getId());
+        if (!page.isNew()) {
+            pageData.put("id", page.getId());
+            pageData.put("version", String.valueOf(page.getVersion()));
+        }
         pageData.put("space", page.getSpace().getKey());
         pageData.put("title", page.getTitle());
         pageData.put("content", content);
-        pageData.put("version", String.valueOf(page.getVersion()));
+        pageData.put("parentId", page.getParentId());
 
-        Hashtable updateOptions = new Hashtable();
-        updateOptions.put("versionComment", "Modified in ConfluEd");
-        updateOptions.put("minorEdit", false);
+        String method;
+        Object[] args;
+        if (page.isNew()) {
+            method = "storePage";
+            args = new Object[] { pageData };
+        }
+        else {
+            method = "updatePage";
 
-        return runWithLoginToken(page.getSpace().getServer(), "updatePage",
-                new Object[] { pageData, updateOptions }, new Consumer<Object>() {
+            Hashtable updateOptions = new Hashtable();
+            updateOptions.put("versionComment", "Modified in ConfluEd");
+            updateOptions.put("minorEdit", false);
+
+            args = new Object[] { pageData, updateOptions };
+        }
+
+
+        return runWithLoginToken(page.getSpace().getServer(), method, args, new Consumer<Object>() {
             public void consume(Object o) {
                 parsePage(page, (Hashtable) o, null);
             }

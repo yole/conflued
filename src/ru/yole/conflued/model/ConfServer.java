@@ -9,9 +9,12 @@ import java.util.List;
  * @author yole
  */
 public class ConfServer implements ConfObject {
+    public static final String NEW_PAGE_ID_PREFIX = "#new#";
+
     private String myURL;
     private String myUserName;
     private String myPassword;
+    private int myLastNewPageId;
 
     public List<ConfSpace> spaces = new ArrayList<ConfSpace>();
 
@@ -53,5 +56,17 @@ public class ConfServer implements ConfObject {
     @Transient
     public String getDisplayName() {
         return myURL;
+    }
+
+    public int getLastNewPageId() {
+        return myLastNewPageId;
+    }
+
+    public void setLastNewPageId(int lastNewPageId) {
+        myLastNewPageId = lastNewPageId;
+    }
+
+    public String nextNewPageId() {
+        return NEW_PAGE_ID_PREFIX + myLastNewPageId++;
     }
 }

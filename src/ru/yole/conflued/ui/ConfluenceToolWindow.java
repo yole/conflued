@@ -53,6 +53,7 @@ public class ConfluenceToolWindow extends SimpleToolWindowPanel {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new AddServerAction());
         group.add(new RefreshAction());
+        group.add(new AddPageAction());
         final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("Confluence", group, true);
         return toolbar.getComponent();
     }
