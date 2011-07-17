@@ -1,18 +1,24 @@
 package ru.yole.conflued.ui;
 
+import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.NodeDescriptor;
+import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.vcs.FileStatus;
+import com.intellij.ui.SimpleTextAttributes;
 import ru.yole.conflued.model.ConfObject;
 import ru.yole.conflued.model.ConfPage;
 import ru.yole.conflued.model.ConfServer;
 import ru.yole.conflued.model.ConfSpace;
 
+import java.awt.*;
+
 /**
  * @author yole
  */
-public class ConfObjectNode extends NodeDescriptor {
+public class ConfObjectNode extends PresentableNodeDescriptor {
     private final ConfObject myObject;
 
     public ConfObjectNode(Project project, NodeDescriptor parentDescriptor, ConfObject confObject) {
@@ -31,10 +37,18 @@ public class ConfObjectNode extends NodeDescriptor {
     }
 
     @Override
-    public boolean update() {
-        boolean nameChanged = !Comparing.equal(myName, myObject.getDisplayName());
-        myName = myObject.getDisplayName();
-        return nameChanged;
+    protected void update(PresentationData presentation) {
+        presentation.setIcons(myOpenIcon);
+        Color color = null;
+        if (myObject instanceof ConfPage) {
+            ConfPage page = (ConfPage) myObject;
+            if (page.isLocallyModified()) {
+                color = EditorColorsManager.getInstance().getGlobalScheme().getColor(FileStatus.MODIFIED.getColorKey());
+            }
+        }
+
+        presentation.addText(myObject.getDisplayName(),
+                color == null ? SimpleTextAttributes.REGULAR_ATTRIBUTES : new SimpleTextAttributes(0, color));
     }
 
     @Override
