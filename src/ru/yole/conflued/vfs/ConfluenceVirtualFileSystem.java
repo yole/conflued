@@ -7,9 +7,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
+import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import ru.yole.conflued.model.ConfPage;
+import ru.yole.conflued.model.PageListener;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -21,9 +25,14 @@ import java.util.WeakHashMap;
  */
 public class ConfluenceVirtualFileSystem extends DeprecatedVirtualFileSystem {
     private final WeakHashMap<ConfPage, ConfluenceVirtualFile> myAllPages = new WeakHashMap<ConfPage, ConfluenceVirtualFile>();
+    private final MessageBus myBus;
 
     public static ConfluenceVirtualFileSystem getInstance() {
         return ApplicationManager.getApplication().getComponent(ConfluenceVirtualFileSystem.class);
+    }
+
+    public ConfluenceVirtualFileSystem(MessageBus bus) {
+        myBus = bus;
     }
 
     @NotNull
@@ -94,19 +103,39 @@ public class ConfluenceVirtualFileSystem extends DeprecatedVirtualFileSystem {
     public void pageUpdated(final ConfPage page) {
         final ConfluenceVirtualFile vFile = myAllPages.get(page);
         if (vFile != null) {
-            final Application application = ApplicationManager.getApplication();
-            application.invokeLater(new Runnable() {
+            ApplicationManager.getApplication().invokeLater(new Runnable() {
                 public void run() {
-                    application.runWriteAction(new Runnable() {
-                        public void run() {
-                            List<VFileContentChangeEvent> events = Collections.singletonList(new VFileContentChangeEvent(this, vFile, page.getVersion(), page.getVersion(), false));
-                            BulkFileListener listener = application.getMessageBus().syncPublisher(VirtualFileManager.VFS_CHANGES);
-                            listener.before(events);
-                            listener.after(events);
-                        }
-                    });
+                    fireContentsChanged(vFile);
                 }
             });
         }
+    }
+
+    public ConfluenceVirtualFile fileForNewPage(final ConfPage page) {
+        final ConfluenceVirtualFile vFile = getVFile(page);
+        myBus.syncPublisher(PageListener.LISTENER_TOPIC).pageCreated(page);
+        return vFile;
+    }
+
+    private void fireContentsChanged(ConfluenceVirtualFile vFile) {
+        ConfPage page = vFile.getPage();
+        fireEvent(new VFileContentChangeEvent(this, vFile, page.getVersion(), page.getVersion(), false));
+        notifyPageUpdated(page);
+    }
+
+    public void notifyPageUpdated(ConfPage page) {
+        myBus.syncPublisher(PageListener.LISTENER_TOPIC).pageUpdated(page);
+    }
+
+    private void fireEvent(final VFileEvent event) {
+        final Application application = ApplicationManager.getApplication();
+        application.runWriteAction(new Runnable() {
+            public void run() {
+                List<VFileEvent> events = Collections.singletonList(event);
+                BulkFileListener listener = application.getMessageBus().syncPublisher(VirtualFileManager.VFS_CHANGES);
+                listener.before(events);
+                listener.after(events);
+            }
+        });
     }
 }

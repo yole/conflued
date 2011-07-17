@@ -41,7 +41,7 @@ public class AddPageAction extends AnAction {
         page.setParentId(parentId);
         page.setLocallyModified(true);
         space.pages.add(page);
-        ConfluenceVirtualFile vFile = ConfluenceVirtualFileSystem.getInstance().getVFile(page);
+        ConfluenceVirtualFile vFile = ConfluenceVirtualFileSystem.getInstance().fileForNewPage(page);
         new OpenFileDescriptor(project, vFile).navigate(true);
     }
 

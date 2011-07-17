@@ -22,6 +22,10 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
         myPage = page;
     }
 
+    public ConfPage getPage() {
+        return myPage;
+    }
+
     @NotNull
     @Override
     public String getName() {
@@ -81,6 +85,7 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
                 ConfluenceClient.getInstance().updatePage(myPage, content).doWhenDone(new Runnable() {
                     public void run() {
                         myPage.setLocallyModified(false);
+                        ConfluenceVirtualFileSystem.getInstance().notifyPageUpdated(myPage);
                     }
                 });
             }

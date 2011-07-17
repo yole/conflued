@@ -67,6 +67,6 @@ public class ConfServer implements ConfObject {
     }
 
     public String nextNewPageId() {
-        return NEW_PAGE_ID_PREFIX + myLastNewPageId++;
+        return NEW_PAGE_ID_PREFIX + ++myLastNewPageId;
     }
 }

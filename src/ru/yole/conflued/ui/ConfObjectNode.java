@@ -4,6 +4,7 @@ import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vcs.FileStatus;
@@ -42,8 +43,12 @@ public class ConfObjectNode extends PresentableNodeDescriptor {
         Color color = null;
         if (myObject instanceof ConfPage) {
             ConfPage page = (ConfPage) myObject;
-            if (page.isLocallyModified()) {
-                color = EditorColorsManager.getInstance().getGlobalScheme().getColor(FileStatus.MODIFIED.getColorKey());
+            EditorColorsScheme colorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
+            if (page.isNew()) {
+                color = colorsScheme.getColor(FileStatus.ADDED.getColorKey());
+            }
+            else if (page.isLocallyModified()) {
+                color = colorsScheme.getColor(FileStatus.MODIFIED.getColorKey());
             }
         }
 
