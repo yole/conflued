@@ -51,7 +51,7 @@ public class RefreshAction extends AnAction implements DumbAware {
     }
 
     public static ActionCallback refreshPage(ConfPage object) {
-        return ConfluenceClient.getInstance().updatePage(object, new Consumer<Pair<ConfPage, String>>() {
+        return ConfluenceClient.getInstance().refreshPage(object, new Consumer<Pair<ConfPage, String>>() {
             public void consume(Pair<ConfPage, String> confPageStringPair) {
                 ConfPage page = confPageStringPair.first;
                 try {

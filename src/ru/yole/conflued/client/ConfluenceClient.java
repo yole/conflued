@@ -68,7 +68,7 @@ public class ConfluenceClient {
         space.pages = result;
     }
 
-    public ActionCallback updatePage(final ConfPage page, final Consumer<Pair<ConfPage, String>> contentConsumer) {
+    public ActionCallback refreshPage(final ConfPage page, final Consumer<Pair<ConfPage, String>> contentConsumer) {
         return runWithLoginToken(page.getSpace().getServer(), "getPage", new Object[] { page.getId() },
                 new Consumer<Object>() {
                     public void consume(Object o) {
@@ -83,6 +83,22 @@ public class ConfluenceClient {
             String content = (String) pageData.get("content");
             contentConsumer.consume(Pair.create(page, content));
         }
+    }
+
+    public ActionCallback updatePage(final ConfPage page, final String content) {
+        Hashtable pageData = new Hashtable();
+        pageData.put("id", page.getId());
+        pageData.put("space", page.getSpace().getKey());
+        pageData.put("title", page.getTitle());
+        pageData.put("content", content);
+        pageData.put("version", String.valueOf(page.getVersion()));
+
+        Hashtable updateOptions = new Hashtable();
+        updateOptions.put("versionComment", "Modified in ConfluEd");
+        updateOptions.put("minorEdit", false);
+
+        return runWithLoginToken(page.getSpace().getServer(), "updatePage",
+                new Object[] { pageData, updateOptions }, Consumer.EMPTY_CONSUMER);
     }
 
     private ActionCallback runWithLoginToken(final ConfServer server, final String method, final Object[] args, final Consumer<Object> consumer) {

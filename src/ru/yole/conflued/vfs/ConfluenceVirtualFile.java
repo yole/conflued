@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.DeprecatedVirtualFile;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
+import ru.yole.conflued.client.ConfluenceClient;
 import ru.yole.conflued.model.ConfPage;
 import ru.yole.conflued.model.PageContentStore;
 
@@ -75,7 +76,9 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
             @Override
             public void close() throws IOException {
                 myPage.setLocallyModified(true);
-                PageContentStore.getInstance().storeLocallyModifiedContent(myPage.getId(), toString(CharsetToolkit.UTF8));
+                String content = toString(CharsetToolkit.UTF8);
+                PageContentStore.getInstance().storeLocallyModifiedContent(myPage.getId(), content);
+                ConfluenceClient.getInstance().updatePage(myPage, content);
             }
         };
     }
