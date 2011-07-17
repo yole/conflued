@@ -18,12 +18,16 @@ import java.nio.charset.Charset;
  * @author yole
  */
 public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
-    private ConfPage myPage;
+    private final ConfPage myPage;
+
+    public ConfluenceVirtualFile(ConfPage page) {
+        myPage = page;
+    }
 
     @NotNull
     @Override
     public String getName() {
-        return myPage.getTitle();
+        return myPage.getTitle() + ".txt";
     }
 
     @NotNull
@@ -62,6 +66,11 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
         return VirtualFile.EMPTY_ARRAY;
     }
 
+    @Override
+    public long getModificationStamp() {
+        return myPage.getVersion();
+    }
+
     @NotNull
     @Override
     public OutputStream getOutputStream(Object requestor, long newModificationStamp, long newTimeStamp) throws IOException {
@@ -71,7 +80,10 @@ public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
     @NotNull
     @Override
     public byte[] contentsToByteArray() throws IOException {
-        String content = PageContentStore.getInstance().loadContent(myPage.getId(), myPage.getVersion());
+        PageContentStore contentStore = PageContentStore.getInstance();
+        String content = contentStore.hasContent(myPage.getId(), myPage.getVersion())
+                ? contentStore.loadContent(myPage.getId(), myPage.getVersion())
+                : "Loading...";
         return content.getBytes(CharsetToolkit.UTF8_CHARSET);
     }
 

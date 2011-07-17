@@ -32,4 +32,8 @@ public class PageContentStore {
     public String loadContent(String pageId, int version) throws IOException {
         return FileUtil.loadFile(pagePath(pageId, version));
     }
+
+    public boolean hasContent(String pageId, int version) {
+        return pagePath(pageId, version).exists();
+    }
 }

@@ -78,7 +78,7 @@ public class ConfluenceClient {
     }
 
     private void parsePage(ConfPage page, Hashtable pageData, Consumer<Pair<ConfPage, String>> contentConsumer) {
-        page.setVersion((Integer) pageData.get("version"));
+        page.setVersion(Integer.parseInt((String) pageData.get("version")));
         if (contentConsumer != null) {
             String content = (String) pageData.get("content");
             contentConsumer.consume(Pair.create(page, content));

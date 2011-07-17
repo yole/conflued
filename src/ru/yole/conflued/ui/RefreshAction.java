@@ -9,6 +9,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.Icons;
 import ru.yole.conflued.client.ConfluenceClient;
 import ru.yole.conflued.model.*;
+import ru.yole.conflued.vfs.ConfluenceVirtualFileSystem;
 
 import java.io.IOException;
 
@@ -44,18 +45,23 @@ public class RefreshAction extends AnAction implements DumbAware {
             return client.updatePages((ConfSpace) object);
         }
         else if (object instanceof ConfPage) {
-            return client.updatePage((ConfPage) object, new Consumer<Pair<ConfPage, String>>() {
-                public void consume(Pair<ConfPage, String> confPageStringPair) {
-                    ConfPage page = confPageStringPair.first;
-                    try {
-                        PageContentStore.getInstance().storeContent(page.getId(), page.getVersion(), confPageStringPair.second);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            return refreshPage((ConfPage) object);
         }
         return new ActionCallback.Done();
+    }
+
+    public static ActionCallback refreshPage(ConfPage object) {
+        return ConfluenceClient.getInstance().updatePage(object, new Consumer<Pair<ConfPage, String>>() {
+            public void consume(Pair<ConfPage, String> confPageStringPair) {
+                ConfPage page = confPageStringPair.first;
+                try {
+                    PageContentStore.getInstance().storeContent(page.getId(), page.getVersion(), confPageStringPair.second);
+                    ConfluenceVirtualFileSystem.getInstance().pageUpdated(page);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override

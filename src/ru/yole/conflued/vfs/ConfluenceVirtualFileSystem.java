@@ -1,17 +1,27 @@
 package ru.yole.conflued.vfs;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.DeprecatedVirtualFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.newvfs.BulkFileListener;
+import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import ru.yole.conflued.model.ConfPage;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.WeakHashMap;
 
 /**
  * @author yole
  */
 public class ConfluenceVirtualFileSystem extends DeprecatedVirtualFileSystem {
+    private final WeakHashMap<ConfPage, ConfluenceVirtualFile> myAllPages = new WeakHashMap<ConfPage, ConfluenceVirtualFile>();
+
     public static ConfluenceVirtualFileSystem getInstance() {
         return ApplicationManager.getApplication().getComponent(ConfluenceVirtualFileSystem.class);
     }
@@ -70,5 +80,33 @@ public class ConfluenceVirtualFileSystem extends DeprecatedVirtualFileSystem {
     @Override
     public boolean isReadOnly() {
         return false;
+    }
+
+    public ConfluenceVirtualFile getVFile(ConfPage page) {
+        ConfluenceVirtualFile vFile = myAllPages.get(page);
+        if (vFile == null) {
+            vFile = new ConfluenceVirtualFile(page);
+            myAllPages.put(page, vFile);
+        }
+        return vFile;
+    }
+
+    public void pageUpdated(final ConfPage page) {
+        final ConfluenceVirtualFile vFile = myAllPages.get(page);
+        if (vFile != null) {
+            final Application application = ApplicationManager.getApplication();
+            application.invokeLater(new Runnable() {
+                public void run() {
+                    application.runWriteAction(new Runnable() {
+                        public void run() {
+                            List<VFileContentChangeEvent> events = Collections.singletonList(new VFileContentChangeEvent(this, vFile, page.getVersion(), page.getVersion(), false));
+                            BulkFileListener listener = application.getMessageBus().syncPublisher(VirtualFileManager.VFS_CHANGES);
+                            listener.before(events);
+                            listener.after(events);
+                        }
+                    });
+                }
+            });
+        }
     }
 }
