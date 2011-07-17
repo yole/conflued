@@ -7,6 +7,8 @@ import com.intellij.util.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
 import ru.yole.conflued.model.*;
 
+import java.util.List;
+
 /**
  * @author yole
  */
@@ -40,13 +42,26 @@ public class ConfluenceTreeStructure extends AbstractTreeStructure {
             return ((ConfServer) element).spaces.toArray();
         }
         if (element instanceof ConfSpace) {
-            return ((ConfSpace) element).pages.toArray();
+            List<ConfPage> pages = ((ConfSpace) element).findPagesWithParent("0");
+            return pages.toArray(new Object[pages.size()]);
+        }
+        if (element instanceof ConfPage) {
+            ConfPage page = (ConfPage) element;
+            List<ConfPage> pages = page.getSpace().findPagesWithParent(page.getId());
+            return pages.toArray(new Object[pages.size()]);
         }
         return ArrayUtil.EMPTY_OBJECT_ARRAY;
     }
 
     @Override
     public Object getParentElement(Object o) {
+        if (o instanceof ConfPage) {
+            ConfPage page = (ConfPage) o;
+            if (page.getParentId() != null) {
+                return page.getSpace().findPageById(page.getParentId());
+            }
+            return page.getSpace();
+        }
         if (o instanceof ConfObject) {
             return ((ConfObject) o).getParent();
         }

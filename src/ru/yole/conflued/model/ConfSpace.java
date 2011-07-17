@@ -1,6 +1,8 @@
 package ru.yole.conflued.model;
 
+import com.intellij.openapi.util.Comparing;
 import com.intellij.util.xmlb.annotations.Transient;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,5 +52,24 @@ public class ConfSpace implements ConfObject {
     @Transient
     public String getDisplayName() {
         return myName;
+    }
+
+    public List<ConfPage> findPagesWithParent(@Nullable String parentId) {
+        List<ConfPage> result = new ArrayList<ConfPage>();
+        for (ConfPage page : pages) {
+            if (Comparing.equal(page.getParentId(), parentId)) {
+                result.add(page);
+            }
+        }
+        return result;
+    }
+
+    public ConfPage findPageById(String id) {
+        for (ConfPage page : pages) {
+            if (page.getId().equals(id)) {
+                return page;
+            }
+        }
+        return null;
     }
 }
