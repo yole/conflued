@@ -5,6 +5,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.ArrayUtil;
@@ -22,6 +23,8 @@ import java.util.*;
  * @author yole
  */
 public class ConfluenceClient {
+    private static final Logger LOG = Logger.getInstance("#ru.yole.conflued.client.ConfluenceClient");
+
     private static final String CONFLUENCE_PREFIX = "confluence1.";
     private final Map<ConfServer, String> myLoginTokens = new WeakHashMap<ConfServer, String>();
 
@@ -51,9 +54,13 @@ public class ConfluenceClient {
     private void parseSpaces(ConfServer server, Vector<Hashtable> spaceSummaries) {
         List<ConfSpace> result = new ArrayList<ConfSpace>();
         for (Hashtable spaceSummary : spaceSummaries) {
+            String key = (String) spaceSummary.get("key");
+            if (key.startsWith("~")) {
+                continue;
+            }
             ConfSpace space = new ConfSpace();
             space.loaded(server);
-            space.setKey((String) spaceSummary.get("key"));
+            space.setKey(key);
             space.setName((String) spaceSummary.get("name"));
             result.add(space);
         }
@@ -159,6 +166,7 @@ public class ConfluenceClient {
         return remoteCall(server.getURL() + "/rpc/xmlrpc", CONFLUENCE_PREFIX + method, allArgs.toArray(), consumer,
                 new Consumer<Exception>() {
                     public void consume(Exception e) {
+                        LOG.info(e);
                         Notifications.Bus.notify(new Notification("Confluence", "Confluence Operation Failed",
                                 "Failure on " + method + ": " + e.getMessage(),
                                 NotificationType.ERROR));                    }
