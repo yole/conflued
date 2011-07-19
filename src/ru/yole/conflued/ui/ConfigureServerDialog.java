@@ -25,6 +25,12 @@ public class ConfigureServerDialog extends DialogWrapper {
         return myRootPanel;
     }
 
+    public void updateFromServer(ConfServer server) {
+        myServerURLTextField.setText(server.getURL());
+        myUsernameTextField.setText(server.getUserName());
+        myPasswordPasswordField.setText(server.getPassword());
+    }
+
     public void updateServer(ConfServer server) {
         server.setURL(myServerURLTextField.getText());
         server.setUserName(myUsernameTextField.getText());
