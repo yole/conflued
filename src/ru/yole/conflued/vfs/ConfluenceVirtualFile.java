@@ -1,7 +1,6 @@
 package ru.yole.conflued.vfs;
 
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.openapi.vfs.DeprecatedVirtualFile;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +14,7 @@ import java.nio.charset.Charset;
 /**
  * @author yole
  */
-public class ConfluenceVirtualFile extends DeprecatedVirtualFile {
+public class ConfluenceVirtualFile extends VirtualFile {
     private final ConfPage myPage;
 
     public ConfluenceVirtualFile(ConfPage page) {
